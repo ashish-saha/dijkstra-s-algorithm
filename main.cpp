@@ -119,23 +119,65 @@ public:
 
 int main(int argc, char* argv[]) {
 	
-	ofstream outFile;
-	outFile.open(argv[2]);
-
-
+	ofstream outFile1;
+		ofstream outFile2;
+		outFile1.open(argv[2]);
 
 		ifstream inFile;
 		inFile.open(argv[1]);
-		int size;
-		inFile >> size;
-
-		DijktraSS tree = DijktraSS();
-		tree.loadCostMatrix(size, inFile);
-
-		tree.print(size);
-
+		int numNodes;
+		inFile >> numNodes;
 		inFile.close();
-		outFile.close();
 
-	return 0;
-}
+		outFile1 << "===============================" << endl;
+		outFile1 << "There are " << numNodes << " nodes in the input graph." << endl;
+		outFile1 << "===============================" << endl;
+
+		for (int i = 1; i <= numNodes; i++) {
+
+			ifstream inFile;
+			inFile.open(argv[1]);
+			int size;
+			inFile >> size;
+
+			DijktraSS tree = DijktraSS();
+			tree.loadCostMatrix(size, inFile);
+
+			int sourceNode = i;
+			outFile1 << "The source node = " << sourceNode << endl;
+			outFile1 << "The shortest paths  from node " << sourceNode << " are:" << endl << endl;
+			tree.loadBestCostAry(sourceNode);
+			tree.loadFatherAry(sourceNode);
+			tree.loadMarkedAry();
+			tree.markMinNode(sourceNode);
+
+			while (tree.markChecker() == true) {
+				int minNode = tree.findMinNode();
+				tree.markMinNode(minNode);
+
+				for (int i = 1; i <= size; i++) {
+					int currentNode = tree.findUnMarked(i);
+					i = currentNode;
+					if (currentNode == 99999)		continue;
+					int newCost = tree.computeCost(minNode, currentNode);
+					if (newCost < tree.bestCost(currentNode)) {
+						tree.changeFather(currentNode, minNode);
+						tree.changeCost(currentNode, newCost);
+					}
+
+				}
+			}
+
+
+			for (int i = 1; i <= size; i++) {
+				outFile1 << "The path from " << sourceNode << " to " << i << " : cost = " << tree.bestCost(i) << endl;
+			}
+			outFile1 << "===============================" << endl;
+
+			inFile.close();
+		}
+		outFile1.close();
+
+	//	system("pause");
+		return 0;
+	}
